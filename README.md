@@ -1,8 +1,7 @@
 ![Aurora Serverless Data API Client](https://user-images.githubusercontent.com/2053544/79285017-44053500-7e8a-11ea-8515-998ccf9c2d2e.png)
 
-[![Build Status](https://travis-ci.org/jeremydaly/data-api-client.svg?branch=master)](https://travis-ci.org/jeremydaly/data-api-client)
-[![npm](https://img.shields.io/npm/v/data-api-client.svg)](https://www.npmjs.com/package/data-api-client)
-[![npm](https://img.shields.io/npm/l/data-api-client.svg)](https://www.npmjs.com/package/data-api-client)
+[![npm](https://img.shields.io/npm/v/@caspiandb/data-api-client)](https://www.npmjs.com/package/@caspiandb/data-api-client)
+[![npm](https://img.shields.io/npm/l/@caspiandb/data-api-client)](https://www.npmjs.com/package/@caspiandb/data-api-client)
 
 The **Data API Client** is a lightweight wrapper that simplifies working with the Amazon Aurora Serverless Data API by abstracting away the notion of field values. This abstraction annotates native JavaScript types supplied as input parameters, as well as converts annotated response data to native JavaScript types. It's basically a [DocumentClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html) for the Data API. It also promisifies the `AWS.RDSDataService` client to make working with `async/await` or Promise chains easier AND dramatically simplifies **transactions**.
 
@@ -99,25 +98,27 @@ let insert = await data.executeStatement({
     { name: 'name', value: { stringValue: 'Cousin Oliver' } },
     { name: 'age', value: { longValue: 10 } },
     { name: 'curls', value: { booleanValue: false } }
-  ]
-).promise()
+  ],
+}).promise()
 ```
 
 Specifying all of those data types in the parameters is a bit clunky. In addition to requiring types for parameters, it also returns each field as an object with its value assigned to a key that represents its data type, like this:
 
 ```javascript
-{ // id field
-  "longValue": 9
-},
-{ // name field
-  "stringValue": "Cousin Oliver"
-},
-{ // age field
-  "longValue": 10
-},
-{ // has_curls field
-  "booleanValue": false
-}
+[
+    { // id field
+      "longValue": 9
+    },
+    { // name field
+      "stringValue": "Cousin Oliver"
+    },
+    { // age field
+      "longValue": 10
+    },
+    { // has_curls field
+      "booleanValue": false
+    }
+]
 ```
 Not only are there no column names, but you have to pull the value from the data type field. Lots of extra work that the **Data API Client** handles automatically for you. 😀
 
@@ -130,21 +131,21 @@ For more information on enabling Data API, see [Enabling Data API](#enabling-dat
 
 ## Configuration Options
 
-Below is a table containing all of the possible configuration options for the `data-api-client`. Additional details are provided throughout the documentation.
+Below is a table containing all the possible configuration options for the `data-api-client`. Additional details are provided throughout the documentation.
 
-| Property | Type | Description | Default |
-| -------- | ---- | ----------- | ------- |
-| AWS      | `AWS` |  A custom `aws-sdk` instance   |         |
-| resourceArn | `string` | The ARN of your Aurora Serverless Cluster. This value is *required*, but can be overridden when querying. |  |
-| secretArn | `string` | The ARN of the secret associated with your database credentials. This is *required*, but can be overridden when querying. |  |
-| database | `string` | *Optional* default database to use with queries. Can be overridden when querying. |  |
-| engine | `mysql` or `pg` | The type of database engine you're connecting to (MySQL or Postgres). | `mysql` |
-| hydrateColumnNames | `boolean` | When `true`, results will be returned as objects with column names as keys. If `false`, results will be returned as an array of values. | `true` |
-| ~~keepAlive~~ (deprecated) | `boolean` | See [Connection Reuse](#connection-reuse) below. | |
-| ~~sslEnabled~~ (deprecated) | `boolean` | Set this in the `options` | `true` |
-| options | `object` | An *optional* configuration object that is passed directly into the RDSDataService constructor. See [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/RDSDataService.html#constructor-property) for available options.  | `{}` |
-| ~~region~~ (deprecated) | `string`  | Set this in the `options` | |
-| formatOptions | `object`  | Formatting options to auto parse dates and coerce native JavaScript date objects to MySQL supported date formats. Valid keys are `deserializeDate` and `treatAsLocalDate`. Both accept boolean values. | Both `false` |
+| Property                    | Type            | Description                                                                                                                                                                                                                         | Default      |
+|-----------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| AWS                         | `AWS`           | A custom `aws-sdk` instance                                                                                                                                                                                                         |              |
+| resourceArn                 | `string`        | The ARN of your Aurora Serverless Cluster. This value is *required*, but can be overridden when querying.                                                                                                                           |              |
+| secretArn                   | `string`        | The ARN of the secret associated with your database credentials. This is *required*, but can be overridden when querying.                                                                                                           |              |
+| database                    | `string`        | *Optional* default database to use with queries. Can be overridden when querying.                                                                                                                                                   |              |
+| engine                      | `mysql` or `pg` | The type of database engine you're connecting to (MySQL or Postgres).                                                                                                                                                               | `mysql`      |
+| hydrateColumnNames          | `boolean`       | When `true`, results will be returned as objects with column names as keys. If `false`, results will be returned as an array of values.                                                                                             | `true`       |
+| ~~keepAlive~~ (deprecated)  | `boolean`       | See [Connection Reuse](#connection-reuse) below.                                                                                                                                                                                    |              |
+| ~~sslEnabled~~ (deprecated) | `boolean`       | Set this in the `options`                                                                                                                                                                                                           | `true`       |
+| options                     | `object`        | An *optional* configuration object that is passed directly into the RDSDataService constructor. See [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/RDSDataService.html#constructor-property) for available options. | `{}`         |
+| ~~region~~ (deprecated)     | `string`        | Set this in the `options`                                                                                                                                                                                                           |              |
+| formatOptions               | `object`        | Formatting options to auto parse dates and coerce native JavaScript date objects to MySQL supported date formats. Valid keys are `deserializeDate` and `treatAsLocalDate`. Both accept boolean values.                              | Both `false` |
 
 ### Connection Reuse
 It is recommended to enable connection reuse as this dramatically decreases the latency of subsequent calls to the AWS API. This can be done by setting an environment variable
@@ -215,10 +216,10 @@ let result = await data.query({
   includeResultMetadata: true, // RDSDataService config option (non-batch only)
   hydrateColumnNames: false, // Returns each record as an arrays of values
   transactionId: 'AQC5SRDIm...ZHXP/WORU=' // RDSDataService config option
-}
+})
 ```
 
-Sometimes you might want to have *dynamic identifiers* in your SQL statements. Unfortunately, the `RDSDataService` doesn't do this, but the **Data API Client** does! We're using the [sqlstring](https://github.com/mysqljs/sqlstring) module under the hood, so as long as [NO_BACKSLASH_ESCAPES](https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_backslash_escapes) SQL mode is disabled (which is the default state for Aurora Serverless), you're good to go. Use a double colon (`::`) prefix to create *named identifiers* and you can do cool things like this:
+Sometimes you might want to have *dynamic identifiers* in your SQL statements. Unfortunately, the `RDSDataService` doesn't do this, but the **Data API Client** does! We're using the [sqlstring](https://github.com/mysqljs/sqlstring) module under the hood, so as long as [NO_BACKSLASH_ESCAPES](https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_backslash_escapes) SQL mode is disabled (which is the default state for Aurora Serverless), you're good to go. Use a double colon (`::`) prefix to create *named identifiers*, and you can do cool things like this:
 
 ```javascript
 let result = await data.query(
@@ -297,7 +298,7 @@ You can specify an optional `rollback()` method in the chain. This will receive 
 ```javascript
 let results = await mysql.transaction()
   .query('INSERT INTO myTable (name) VALUES(:name)', { name: 'Tiger' })
-  .query('UPDATE myTable SET age = :age WHERE name = :name' { age: 4, name: 'Tiger' })
+  .query('UPDATE myTable SET age = :age WHERE name = :name', { age: 4, name: 'Tiger' })
   .rollback((e,status) => { /* do something with the error */ }) // optional
   .commit() // execute the queries
 ```
@@ -329,12 +330,12 @@ The default configuration information (`resourceArn`, `secretArn`, and `database
 
 ```javascript
 let result = await data.executeStatement({
-  sql: `SELECT * FROM myTable WHERE id = :id`,
-  parameters: [
-    { name: 'id', value: { longValue: 1 } }
-  ],
-  transactionId: 'AQC5SRDIm...ZHXP/WORU='
-)
+    sql: `SELECT * FROM myTable WHERE id = :id`,
+    parameters: [
+        {name: 'id', value: {longValue: 1}}
+    ],
+    transactionId: 'AQC5SRDIm...ZHXP/WORU=',
+})
 ```
 
 ## Custom AWS instance
@@ -369,14 +370,14 @@ The GitHub repo for RDSDataService mentions something about `arrayValues`, but I
 
 ```javascript
 let result = await data.executeStatement({
-  secretArn: 'arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:mySecret',
-  resourceArn: 'arn:aws:rds:us-east-1:XXXXXXXXXXXX:cluster:my-cluster-name',
-  database: 'myDatabase',
-  sql: 'SELECT * FROM myTable WHERE id IN (:ids)',
-  parameters: [
-    { name: 'id', value: { blobValue: [1,2,3,4,5] } }
-  ]
-).promise()
+    secretArn: 'arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:mySecret',
+    resourceArn: 'arn:aws:rds:us-east-1:XXXXXXXXXXXX:cluster:my-cluster-name',
+    database: 'myDatabase',
+    sql: 'SELECT * FROM myTable WHERE id IN (:ids)',
+    parameters: [
+        {name: 'id', value: {blobValue: [1, 2, 3, 4, 5]}}
+    ],
+}).promise()
 ```
 
 I'm using `blobValue` because it's the only generic value field. You could send it in as a string, but then it only uses the first value. Hopefully they will add an `arrayValues` or something similar to support this in the future.
@@ -389,16 +390,16 @@ If you want to use dynamic column or field names, there is no way to do it autom
 
 ```javascript
 let result = await data.executeStatement({
-  secretArn: 'arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:mySecret',
-  resourceArn: 'arn:aws:rds:us-east-1:XXXXXXXXXXXX:cluster:my-cluster-name',
-  database: 'myDatabase',
-  sql: 'SELECT ::fields FROM myTable WHERE id = :id',
-  parameters: [
-    // Note: 'arrayValues' is not a real thing
-    { name: 'fields', value: { arrayValues: ['id','name','created'] } },
-    { name: 'id', value: { longValue: 1 } }
-  ]
-).promise()
+    secretArn: 'arn:aws:secretsmanager:us-east-1:XXXXXXXXXXXX:secret:mySecret',
+    resourceArn: 'arn:aws:rds:us-east-1:XXXXXXXXXXXX:cluster:my-cluster-name',
+    database: 'myDatabase',
+    sql: 'SELECT ::fields FROM myTable WHERE id = :id',
+    parameters: [
+        // Note: 'arrayValues' is not a real thing
+        {name: 'fields', value: {arrayValues: ['id', 'name', 'created']}},
+        {name: 'id', value: {longValue: 1}}
+    ],
+}).promise()
 ```
 
 No worries! The Data API Client gives you the ability to parameterize identifiers and auto escape them. Just use a double colon (`::`) to prefix your named identifiers.
@@ -414,20 +415,20 @@ In order to use the Data API, you must enable it on your Aurora Serverless Clust
 
 ![Enable Data API in Network & Security settings of your cluster](https://user-images.githubusercontent.com/2053544/58768968-79ee4300-8570-11e9-9266-1433182e0db2.png)
 
-You need to modify your Aurora Serverless cluster by clicking “ACTIONS” and then “Modify Cluster”. Just check the Data API box in the *Network & Security* section and you’re good to go. Remember that your Aurora Serverless cluster still runs in a VPC, even though you don’t need to run your Lambdas in a VPC to access it via the Data API.
+You need to modify your Aurora Serverless cluster by clicking “ACTIONS” and then “Modify Cluster”. Just check the "Data API" box in the *Network & Security* section, and you’re good to go. Remember that your Aurora Serverless cluster still runs in a VPC, even though you don’t need to run your Lambdas in a VPC to access it via the Data API.
 
 ### Set up a secret in the Secrets Manager
 
-Next you need to set up a secret in the Secrets Manager. This is actually quite straightforward. User name, password, encryption key (the default is probably fine for you), and select the database you want to access with the secret.
+Next you need to set up a secret in the Secrets Manager. This is actually quite straightforward. Username, password, encryption key (the default is probably fine for you), and select the database you want to access with the secret.
 
 ![Enter database credentials and select database to access](https://user-images.githubusercontent.com/2053544/58768974-912d3080-8570-11e9-8878-636dfb742b00.png)
 
 
-Next we give it a name, this is important, because this will be part of the arn when we set up permissions later. You can give it a description as well so you don’t forget what this secret is about when you look at it in a few weeks.
+Next we give it a name, this is important, because this will be part of the arn when we set up permissions later. You can give it a description as well, so you don’t forget what this secret is about when you look at it in a few weeks.
 
 ![Give your secret a name and add a description](https://user-images.githubusercontent.com/2053544/58768984-a7d38780-8570-11e9-8b21-199db5548c73.png)
 
-You can then configure your rotation settings, if you want, and then you review and create your secret. Then you can click on your newly created secret and grab the arn, we’re gonna need that next.
+You can then configure your rotation settings, if you want, and then you review and create your secret. Then you can click on your newly created secret and grab the arn, we’re going to need that next.
 
 ![Click on your secret to get the arn.](https://user-images.githubusercontent.com/2053544/58768989-bae65780-8570-11e9-94fb-51f6fa7d34bf.png)
 
@@ -454,26 +455,28 @@ Statement:
 ```
 
 **JSON:**
-```javascript
-"Statement" : [
-  {
-    "Effect": "Allow",
-    "Action": [
-      "rds-data:ExecuteSql",
-      "rds-data:ExecuteStatement",
-      "rds-data:BatchExecuteStatement",
-      "rds-data:BeginTransaction",
-      "rds-data:RollbackTransaction",
-      "rds-data:CommitTransaction"
-    ],
-    "Resource": "*"
-  },
-  {
-    "Effect": "Allow",
-    "Action": [ "secretsmanager:GetSecretValue" ],
-    "Resource": "arn:aws:secretsmanager:{REGION}:{ACCOUNT-ID}:secret:{PATH-TO-SECRET}/*"
-  }
-]
+```json
+{
+  "Statement" : [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rds-data:ExecuteSql",
+        "rds-data:ExecuteStatement",
+        "rds-data:BatchExecuteStatement",
+        "rds-data:BeginTransaction",
+        "rds-data:RollbackTransaction",
+        "rds-data:CommitTransaction"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [ "secretsmanager:GetSecretValue" ],
+      "Resource": "arn:aws:secretsmanager:{REGION}:{ACCOUNT-ID}:secret:{PATH-TO-SECRET}/*"
+    }
+  ]
+}
 ```
 
 ## Sponsors
@@ -482,4 +485,4 @@ Statement:
 <IMG SRC="https://ad.doubleclick.net/ddm/trackimp/N1116303.3950900PODSEARCH.COM/B24770737.285235234;dc_trk_aid=479074825;dc_trk_cid=139488579;ord=[timestamp];dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_755}?" BORDER="0" HEIGHT="1" WIDTH="1" ALT="Advertisement">
 
 ## Contributions
-Contributions, ideas and bug reports are welcome and greatly appreciated. Please add [issues](https://github.com/jeremydaly/data-api-client/issues) for suggestions and bug reports or create a pull request. You can also contact me on Twitter: [@jeremy_daly](https://twitter.com/jeremy_daly).
+Contributions, ideas and bug reports are welcome and greatly appreciated. Please add [issues](https://github.com/caspiandb/data-api-client/issues) for suggestions and bug reports or create a pull request.

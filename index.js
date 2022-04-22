@@ -8,16 +8,18 @@
  * https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html
  *
  * @author Jeremy Daly <jeremy@jeremydaly.com>
- * @version 1.2.0
+ * @version 1.4.0
  * @license MIT
  */
 
 // Require the aws-sdk. This is a dev dependency, so if being used
-// outside of a Lambda execution environment, it must be manually installed.
+// outside a Lambda execution environment, it must be manually installed.
 const AWS = require('aws-sdk')
 
 // Require sqlstring to add additional escaping capabilities
 const sqlString = require('sqlstring')
+
+const UUID_REGEX = /^(?:[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}|00000000-0000-0000-0000-000000000000)$/i
 
 // Supported value types in the Data API
 const supportedTypes = [
@@ -169,7 +171,12 @@ const processParams = (engine, sql, sqlParams, params, formatOptions, row = 0) =
 }
 
 // Converts parameter to the name/value format
-const formatParam = (n, v, formatOptions) => formatType(n, v, getType(v), getTypeHint(v), formatOptions)
+const formatParam = (n, v, formatOptions) => {
+  const type = getType(v)
+  // typeHint is valid only for stringValue: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html
+  const typeHint = type === 'stringValue' ? getTypeHint(v) : undefined
+  return formatType(n, v, type, typeHint, formatOptions)
+}
 
 // Converts object params into name/value format
 const splitParams = (p) => Object.keys(p).reduce((arr, x) => arr.concat({ name: x, value: p[x] }), [])
@@ -218,12 +225,26 @@ const getType = (val) =>
     // TODO: there is a 'structValue' now for postgres
     typeof val === 'object' && Object.keys(val).length === 1 && supportedTypes.includes(Object.keys(val)[0])
     ? null
+    : typeof val === 'object'
+    ? 'stringValue' // try to encode as JSON later
     : undefined
 
 // Hint to specify the underlying object type for data type mapping
-const getTypeHint = (val) => (isDate(val) ? 'TIMESTAMP' : undefined)
+const getTypeHint = val => {
+  if (isDate(val))
+    return 'TIMESTAMP'
+  if (isUUID(val))
+    return 'UUID'
+  if (isObject(val))
+    return 'JSON'
+  return undefined
+}
 
 const isDate = (val) => val instanceof Date
+
+const isUUID = val => typeof val === 'string' && UUID_REGEX.test(val)
+
+const isObject = val => typeof val === 'object'
 
 // Creates a standard Data API parameter using the supplied inputs
 const formatType = (name, value, type, typeHint, formatOptions) => {
@@ -238,6 +259,8 @@ const formatType = (name, value, type, typeHint, formatOptions) => {
                 ? true
                 : isDate(value)
                 ? formatToTimeStamp(value, formatOptions && formatOptions.treatAsLocalDate)
+                : typeHint === 'JSON'
+                ? JSON.stringify(value)
                 : value
           }
         }
@@ -297,7 +320,7 @@ const formatResults = (
     generatedFields && generatedFields.length > 0 ? { insertId: generatedFields[0].longValue } : {}
   )
 
-// Processes records and either extracts Typed Values into an array, or
+// Processes record(s) and either extracts Typed Values into an array, or
 // object with named column labels
 const formatRecords = (recs, columns, hydrate, formatOptions) => {
   // Create map for efficient value parsing
@@ -354,13 +377,14 @@ const formatRecordValue = (value, typeName, formatOptions) => {
   if (
     formatOptions &&
     formatOptions.deserializeDate &&
+    typeName &&
     ['DATE', 'DATETIME', 'TIMESTAMP', 'TIMESTAMPTZ', 'TIMESTAMP WITH TIME ZONE'].includes(typeName.toUpperCase())
   ) {
     return formatFromTimeStamp(
       value,
       (formatOptions && formatOptions.treatAsLocalDate) || typeName === 'TIMESTAMP WITH TIME ZONE'
     )
-  } else if (typeName === 'JSON') {
+  } else if (typeName && ['JSON', 'JSONB'].includes(typeName.toUpperCase())) {
     return JSON.parse(value)
   } else {
     return value
@@ -590,7 +614,7 @@ const init = (params) => {
     // Value formatting options. For date the deserialization is enabled and (re)stored as UTC
     formatOptions: {
       deserializeDate:
-        typeof params.formatOptions === 'object' && params.formatOptions.deserializeDate === false ? false : true,
+        !(typeof params.formatOptions === 'object' && params.formatOptions.deserializeDate === false),
       treatAsLocalDate: typeof params.formatOptions === 'object' && params.formatOptions.treatAsLocalDate
     },
 
