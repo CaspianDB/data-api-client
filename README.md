@@ -1,7 +1,7 @@
 ![Aurora Serverless Data API Client](https://user-images.githubusercontent.com/2053544/79285017-44053500-7e8a-11ea-8515-998ccf9c2d2e.png)
 
-[![npm](https://img.shields.io/npm/v/@caspiandb/data-api-client)](https://www.npmjs.com/package/@caspiandb/data-api-client)
-[![npm](https://img.shields.io/npm/l/@caspiandb/data-api-client)](https://www.npmjs.com/package/@caspiandb/data-api-client)
+[![npm](https://img.shields.io/npm/v/@caspiandb/data-api-client.svg)](https://www.npmjs.com/package/@caspiandb/data-api-client)
+[![npm](https://img.shields.io/npm/l/@caspiandb/data-api-client.svg)](https://www.npmjs.com/package/@caspiandb/data-api-client)
 
 The **Data API Client** is a lightweight wrapper that simplifies working with the Amazon Aurora Serverless Data API by abstracting away the notion of field values. This abstraction annotates native JavaScript types supplied as input parameters, as well as converts annotated response data to native JavaScript types. It's basically a [DocumentClient](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html) for the Data API. It also promisifies the `AWS.RDSDataService` client to make working with `async/await` or Promise chains easier AND dramatically simplifies **transactions**.
 
