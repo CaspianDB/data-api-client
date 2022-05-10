@@ -331,6 +331,18 @@ const formatRecords = (recs, columns, hydrate, formatOptions) => {
         })
       : {}
 
+  const formatArray = (field, fmapData) => {
+    const rec = field[fmapData.field]
+    let arrayType
+    Object.keys(rec).map((type) => {
+      if (type !== 'isNull' && field[type] !== null) {
+        arrayType = type
+      }
+    })
+    const array = rec[arrayType]
+    return array.map(v => formatRecordValue(v, fmapData.typeName, formatOptions))
+  }
+
   // Map over all the records (rows)
   return recs
     ? recs.map((rec) => {
@@ -345,10 +357,16 @@ const formatRecords = (recs, columns, hydrate, formatOptions) => {
 
               // If the field is mapped, return the mapped field
             } else if (fmap[i] && fmap[i].field) {
-              const value = formatRecordValue(field[fmap[i].field], fmap[i].typeName, formatOptions)
+              let value
+              if (fmap[i].field === 'arrayValue') {
+                value = formatArray(field, fmap[i])
+              } else {
+                // Return the mapped field (this should NEVER be null)
+                value = formatRecordValue(field[fmap[i].field], fmap[i].typeName, formatOptions)
+              }
               return hydrate // object if hydrate, else array
                 ? Object.assign(acc, { [fmap[i].label]: value })
-                : acc.concat(value)
+                : acc.concat(Array.isArray(value) ? [value] : value)
 
               // Else discover the field type
             } else {
@@ -359,11 +377,16 @@ const formatRecords = (recs, columns, hydrate, formatOptions) => {
                 }
               })
 
-              // Return the mapped field (this should NEVER be null)
-              const value = formatRecordValue(field[fmap[i].field], fmap[i].typeName, formatOptions)
+              let value
+              if (fmap[i].field === 'arrayValue') {
+                value = formatArray(field, fmap[i])
+              } else {
+                // Return the mapped field (this should NEVER be null)
+                value = formatRecordValue(field[fmap[i].field], fmap[i].typeName, formatOptions)
+              }
               return hydrate // object if hydrate, else array
                 ? Object.assign(acc, { [fmap[i].label]: value })
-                : acc.concat(value)
+                : acc.concat(Array.isArray(value) ? [value] : value)
             }
           },
           hydrate ? {} : []

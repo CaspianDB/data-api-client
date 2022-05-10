@@ -523,8 +523,8 @@ describe('querying', () => {
 
       expect(result).toEqual({
         records: [
-          [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null ],
-          [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null ]
+          [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null, [{a: 1}, {b: 2}] ],
+          [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null, [{c: 1}, {d: 2}] ]
         ]
       })
       expect(parameters).toEqual({
@@ -552,7 +552,11 @@ describe('querying', () => {
           description: null,
           id: 1,
           modified: '2019-11-12 22:15:25',
-          name: 'Category 1'
+          name: 'Category 1',
+          array_data: [
+            {a: 1},
+            {b: 2}
+          ],
         },
         {
           created: '2019-11-12 22:17:11',
@@ -560,7 +564,11 @@ describe('querying', () => {
           description: 'Description of Category 2',
           id: 2,
           modified: '2019-11-12 22:21:36',
-          name: 'Category 2'
+          name: 'Category 2',
+          array_data: [
+            {c: 1},
+            {d: 2}
+          ],
         }
       ])
     })
@@ -569,8 +577,8 @@ describe('querying', () => {
       let { records } = require('./test/sample-query-response.json')
       let result = formatRecords(records, false)
       expect(result).toEqual([
-        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null ],
-        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null ]
+        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null, ['{"a":1}', '{"b":2}'] ],
+        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null, ['{"c":1}', '{"d":2}'] ]
       ])
     })
   }) // end formatRecords
@@ -616,7 +624,11 @@ describe('formatResults', () => {
           description: null,
           id: 1,
           modified: '2019-11-12 22:15:25',
-          name: 'Category 1'
+          name: 'Category 1',
+          array_data: [
+            {a: 1},
+            {b: 2}
+          ],
         },
         {
           created: '2019-11-12 22:17:11',
@@ -624,7 +636,11 @@ describe('formatResults', () => {
           description: 'Description of Category 2',
           id: 2,
           modified: '2019-11-12 22:21:36',
-          name: 'Category 2'
+          name: 'Category 2',
+          array_data: [
+            {c: 1},
+            {d: 2}
+          ],
         }
       ]
     })
@@ -641,7 +657,11 @@ describe('formatResults', () => {
           description: null,
           id: 1,
           modified: new Date('2019-11-12T22:15:25Z'),
-          name: 'Category 1'
+          name: 'Category 1',
+          array_data: [
+            {a: 1},
+            {b: 2}
+          ],
         },
         {
           created: new Date('2019-11-12T22:17:11Z'),
@@ -649,7 +669,11 @@ describe('formatResults', () => {
           description: 'Description of Category 2',
           id: 2,
           modified: new Date('2019-11-12T22:21:36Z'),
-          name: 'Category 2'
+          name: 'Category 2',
+          array_data: [
+            {c: 1},
+            {d: 2}
+          ],
         }
       ]
     })
@@ -661,8 +685,8 @@ describe('formatResults', () => {
     let result = formatResults(response,false,false)
     expect(result).toEqual({
       records: [
-        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null ],
-        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null ]
+        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null, [{a: 1}, {b: 2}] ],
+        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null, [{c: 1}, {d: 2}] ]
       ]
     })
   })
@@ -674,8 +698,8 @@ describe('formatResults', () => {
     expect(result).toEqual({
       columnMetadata,
       records: [
-        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null ],
-        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null ]
+        [ 1, 'Category 1', null, '2019-11-12 22:00:11', '2019-11-12 22:15:25', null, [{a: 1}, {b: 2}] ],
+        [ 2, 'Category 2', 'Description of Category 2', '2019-11-12 22:17:11', '2019-11-12 22:21:36', null, [{c: 1}, {d: 2}] ]
       ]
     })
   })
@@ -685,8 +709,8 @@ describe('formatResults', () => {
     let result = formatResults(response,false,false, { deserializeDate: true })
     expect(result).toEqual({
       records: [
-        [ 1, 'Category 1', null, new Date('2019-11-12T22:00:11.000Z'), new Date('2019-11-12T22:15:25.000Z'), null ],
-        [ 2, 'Category 2', 'Description of Category 2', new Date('2019-11-12T22:17:11.000Z'), new Date('2019-11-12T22:21:36.000Z'), null ]
+        [ 1, 'Category 1', null, new Date('2019-11-12T22:00:11.000Z'), new Date('2019-11-12T22:15:25.000Z'), null, [{a: 1}, {b: 2}] ],
+        [ 2, 'Category 2', 'Description of Category 2', new Date('2019-11-12T22:17:11.000Z'), new Date('2019-11-12T22:21:36.000Z'), null, [{c: 1}, {d: 2}] ]
       ]
     })
   })
@@ -696,8 +720,8 @@ describe('formatResults', () => {
     let result = formatResults(response,false,false, { deserializeDate: true, treatAsLocalDate: true })
     expect(result).toEqual({
       records: [
-        [ 1, 'Category 1', null, new Date('2019-11-12 22:00:11'), new Date('2019-11-12 22:15:25'), null ],
-        [ 2, 'Category 2', 'Description of Category 2', new Date('2019-11-12 22:17:11'), new Date('2019-11-12 22:21:36'), null ]
+        [ 1, 'Category 1', null, new Date('2019-11-12 22:00:11'), new Date('2019-11-12 22:15:25'), null, [{a: 1}, {b: 2}] ],
+        [ 2, 'Category 2', 'Description of Category 2', new Date('2019-11-12 22:17:11'), new Date('2019-11-12 22:21:36'), null, [{c: 1}, {d: 2}] ]
       ]
     })
   })

@@ -95,6 +95,22 @@
       "tableName": "cats",
       "type": 93,
       "typeName": "TIMESTAMP"
+    },
+    {
+      "arrayBaseColumnType": 0,
+      "isAutoIncrement": false,
+      "isCaseSensitive": false,
+      "isCurrency": false,
+      "isSigned": false,
+      "label": "array_data",
+      "name": "array_data",
+      "nullable": 0,
+      "precision": 2147483647,
+      "scale": 0,
+      "schemaName": "",
+      "tableName": "",
+      "type": 3802,
+      "typeName": "jsonb"
     }
   ],
   "numberOfRecordsUpdated": 0,
@@ -117,6 +133,14 @@
       },
       {
         "isNull": true
+      },
+      {
+        "arrayValue": {
+          "stringValues": [
+            "{\"a\":1}",
+            "{\"b\":2}"
+          ]
+        }
       }
     ],
     [
@@ -137,6 +161,14 @@
       },
       {
         "isNull": true
+      },
+      {
+        "arrayValue": {
+          "stringValues": [
+            "{\"c\":1}",
+            "{\"d\":2}"
+          ]
+        }
       }
     ]
   ]
