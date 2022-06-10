@@ -730,6 +730,7 @@ describe('formatResults', () => {
     let response = require('./test/sample-update-response.json')
     let result = formatResults(response,false,false)
     expect(result).toEqual({
+      records: [],
       numberOfRecordsUpdated: 1
     })
   })
@@ -738,6 +739,7 @@ describe('formatResults', () => {
     let response = require('./test/sample-delete-response.json')
     let result = formatResults(response,false,false)
     expect(result).toEqual({
+      records: [],
       numberOfRecordsUpdated: 1
     })
   })

@@ -310,7 +310,7 @@ const formatResults = (
 ) =>
   Object.assign(
     includeMeta ? { columnMetadata } : {},
-    numberOfRecordsUpdated !== undefined && !records ? { numberOfRecordsUpdated } : {},
+    numberOfRecordsUpdated !== undefined && (!records || records.length === 0) ? { numberOfRecordsUpdated } : {},
     records
       ? {
           records: formatRecords(records, columnMetadata, hydrate, formatOptions)
